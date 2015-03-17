@@ -1,0 +1,7 @@
+Work list for each team member:
+- Yuxuan - programmed the entire user interface of the instrument.
+- Jacob - helped formulate the idea and played a sort of project manager role.
+- Eliana - wrote this work list and managed coordination between members of the group.
+- Avi - contributed greatly to the idea's formulation and narrowed down aspects of the actual performance.
+- Longhan - finalized the design and interaction paradigm for the piece.
+- Jiawei - outlined the work to be done in the future and the problems that we currently face.
