@@ -38,6 +38,8 @@ end
  		DPrint("Red")
  		currentColor = RED
  	end
+
+ 	-- TODO: Longhan - call function to play sound based on color here
  end
 
 function updateHandler(self, elapsedTime)
