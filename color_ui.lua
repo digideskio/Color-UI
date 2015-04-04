@@ -50,36 +50,29 @@ function updateHandler(self, elapsedTime)
 	b4 = math.floor((b1+b2+b3)/3)
 
 	if mode == 0 and frozen == 0 then
-		color.t:SetSolidColor((r1+r2+r3)/3, (g1+g2+g3)/3, (b1+b2+b3)/3)
-		infoBoxes[0].title:SetLabel(r4)
-		infoBoxes[1].title:SetLabel(g4)
-		infoBoxes[2].title:SetLabel(b4)
+		-- Nothing needed
 	elseif mode == 2 and frozen == 0 then
-		r1 = redOffset
-		g1 = greenOffset
-		b1 = blueOffset
-		if r1 < 0 then r1 = 0 end
-		if g1 < 0 then g1 = 0 end
-		if b1 < 0 then b1 = 0 end
-		color.t:SetSolidColor(r1, g1, b1)
-		infoBoxes[0].title:SetLabel(r1)
-		infoBoxes[1].title:SetLabel(g1)
-		infoBoxes[2].title:SetLabel(b1)
+		r4 = redOffset
+		g4 = greenOffset
+		b4 = blueOffset
 	elseif mode == 1 and frozen == 0 then
 		r4 = r4 + redOffset
 		g4 = g4 + greenOffset
 		b4 = b4 + blueOffset
-		if r4 < 0 then r4 = 0 end
-		if r4 > 255 then r4 = 255 end
-		if g4 < 0 then g4 = 0 end
-		if g4 > 255 then g4 = 255 end
-		if b4 < 0 then b4 = 0 end
-		if b4 > 255 then b4 = 255 end
-		color.t:SetSolidColor(r4, g4, b4)
-		infoBoxes[0].title:SetLabel(math.floor(r4))
-		infoBoxes[1].title:SetLabel(math.floor(g4))
-		infoBoxes[2].title:SetLabel(math.floor(b4))
 	end
+
+	if r4 < 0 then r4 = 0 end
+	if r4 > 255 then r4 = 255 end
+	if g4 < 0 then g4 = 0 end
+	if g4 > 255 then g4 = 255 end
+	if b4 < 0 then b4 = 0 end
+	if b4 > 255 then b4 = 255 end
+
+	color.t:SetSolidColor(r4, g4, b4)
+
+	infoBoxes[0].title:SetLabel(r4)
+	infoBoxes[1].title:SetLabel(g4)
+	infoBoxes[2].title:SetLabel(b4)
 
 	colorUpdate(r4, g4, b4)
 end
