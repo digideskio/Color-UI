@@ -4,15 +4,56 @@ blueOffset = 0
 mode = 0
 SetPage(1)
 
-function accelerateHandler(self, x, y, z)
-	if  y < -0.5 and z < 0 and mode == 0 and frozen == 0 then
-		r1,g1,b1 = camera.t:PixelColor(ScreenWidth()/6, ScreenHeight()/6)
-		r2,g2,b2 = camera.t:PixelColor(ScreenWidth()/6, ScreenHeight()/12)
-		r3,g3,b3 = camera.t:PixelColor(ScreenWidth()/6, ScreenHeight()/4)
+-- color methods
+
+RED, GREEN, YELLOW = 0, 1, 2
+
+currentColor = RED
+
+function isRed(r, g, b)
+	local RED_DIFFERENCE = 100
+	return g + RED_DIFFERENCE < r and b + RED_DIFFERENCE < r
+end
+
+function isGreen(r, g, b)
+	local GREEN_DIFFERENCE = 50
+	return r + GREEN_DIFFERENCE < g and b + GREEN_DIFFERENCE < g
+end
+
+function isYellow(r, g, b)
+	local YELLOW_MAX_B = 160
+	local YELLOW_MIN_RG = 120
+	return (r + g) / 2 > YELLOW_MIN_RG and b < YELLOW_MAX_B and math.abs(r - g) < 50
+end
+
+ function colorUpdate(r, g, b)
+ 	DPrint("")
+ 	if isYellow(r,g,b) then
+ 		DPrint("Yellow")
+ 		currentColor = YELLOW
+ 	elseif isGreen(r,g,b) then
+ 		DPrint("Green")
+ 		currentColor = GREEN
+ 	elseif isRed(r,g,b) then
+ 		DPrint("Red")
+ 		currentColor = RED
+ 	end
+ end
+
+function updateHandler(self, elapsedTime)
+	r1,g1,b1 = camera.t:PixelColor(ScreenWidth()/6, ScreenHeight()/6)
+	r2,g2,b2 = camera.t:PixelColor(ScreenWidth()/6, ScreenHeight()/12)
+	r3,g3,b3 = camera.t:PixelColor(ScreenWidth()/6, ScreenHeight()/4)
+
+	r4 = math.floor((r1+r2+r3)/3)
+	g4 = math.floor((g1+g2+g3)/3)
+	b4 = math.floor((b1+b2+b3)/3)
+
+	if mode == 0 and frozen == 0 then
 		color.t:SetSolidColor((r1+r2+r3)/3, (g1+g2+g3)/3, (b1+b2+b3)/3)
-		infoBoxes[0].title:SetLabel(math.floor((r1+r2+r3)/3))
-		infoBoxes[1].title:SetLabel(math.floor((g1+g2+g3)/3))
-		infoBoxes[2].title:SetLabel(math.floor((b1+b2+b3)/3))
+		infoBoxes[0].title:SetLabel(r4)
+		infoBoxes[1].title:SetLabel(g4)
+		infoBoxes[2].title:SetLabel(b4)
 	elseif mode == 2 and frozen == 0 then
 		r1 = redOffset
 		g1 = greenOffset
@@ -24,13 +65,10 @@ function accelerateHandler(self, x, y, z)
 		infoBoxes[0].title:SetLabel(r1)
 		infoBoxes[1].title:SetLabel(g1)
 		infoBoxes[2].title:SetLabel(b1)
-	elseif y < -0.5 and z < 0 and mode == 1 and frozen ==0 then
-		r1,g1,b1 = camera.t:PixelColor(ScreenWidth()/6, ScreenHeight()/6)
-		r2,g2,b2 = camera.t:PixelColor(ScreenWidth()/6, ScreenHeight()/12)
-		r3,g3,b3 = camera.t:PixelColor(ScreenWidth()/6, ScreenHeight()/4)
-		r4 = (r1+r2+r3)/3 + redOffset
-		g4 = (g1+g2+g3)/3 + greenOffset
-		b4 = (b1+b2+b3)/3 + blueOffset
+	elseif mode == 1 and frozen == 0 then
+		r4 = r4 + redOffset
+		g4 = g4 + greenOffset
+		b4 = b4 + blueOffset
 		if r4 < 0 then r4 = 0 end
 		if r4 > 255 then r4 = 255 end
 		if g4 < 0 then g4 = 0 end
@@ -42,6 +80,8 @@ function accelerateHandler(self, x, y, z)
 		infoBoxes[1].title:SetLabel(math.floor(g4))
 		infoBoxes[2].title:SetLabel(math.floor(b4))
 	end
+
+	colorUpdate(r4, g4, b4)
 end
 
 function freezerHandler(self)
@@ -216,6 +256,7 @@ camera:SetLayer("LOW")
 camera.t = camera:Texture(255, 255, 255, 255)
 camera.t:UseCamera()
 camera:Show()
+camera:Handle("OnUpdate", updateHandler)
 
 color = Region()
 color:SetWidth(ScreenWidth()/3)
@@ -228,7 +269,6 @@ color.title:SetLabel("Major Camera Color")
 color.title:SetVerticalAlign("TOP")
 color.title:SetColor(255, 255, 0, 255)
 color:Show()
-color:Handle("OnAccelerate", accelerateHandler)
 
 frozen = 0
 freezer = Region()
@@ -240,7 +280,7 @@ freezer.t = freezer:Texture(255, 0, 0, 255)
 freezer.title = freezer:TextLabel()
 freezer.title:SetLabel("FREEZE")
 freezer.title:SetColor(0, 0, 0, 255)
-freezer.title:SetFontHeight(35)
+freezer.title:SetFontHeight(20)
 freezer:Show()
 freezer:Handle("OnTouchDown", freezerHandler)
 freezer:EnableInput(true)
@@ -254,7 +294,7 @@ reset.t = reset:Texture(0, 255, 0, 255)
 reset.title = reset:TextLabel()
 reset.title:SetLabel("RESET")
 reset.title:SetColor(0, 0, 0, 255)
-reset.title:SetFontHeight(35)
+reset.title:SetFontHeight(20)
 reset:Show()
 reset:Handle("OnTouchDown", resetHandler)
 reset:EnableInput(true)
@@ -270,7 +310,7 @@ for i= 0, 2 do
 	settingButtons[i]:Show()
 	settingButtons[i].title = settingButtons[i]:TextLabel()
 	settingButtons[i].title:SetColor(255, 255, 255, 255)
-	settingButtons[i].title:SetFontHeight(24)
+	settingButtons[i].title:SetFontHeight(20)
 	settingButtons[i]:EnableInput(true)
 end
 settingButtons[0].title:SetLabel("Camera")
@@ -293,7 +333,7 @@ for i=0,2 do
 	texts[i].t = texts[i]:Texture(255, 255, 255, 255)
 	texts[i]:Show()
 	texts[i].title = texts[i]:TextLabel()
-	texts[i].title:SetFontHeight(50)
+	texts[i].title:SetFontHeight(20)
 end
 texts[0].title:SetLabel("RED")
 texts[1].title:SetLabel("GREEN")
@@ -311,7 +351,7 @@ for i=0,2 do
 	addButtons[i]:SetAnchor("TOP", texts[i], "BOTTOM", 0, -ScreenHeight()*1/256)
 	addButtons[i].title = addButtons[i]:TextLabel()
 	addButtons[i].title:SetColor(255, 255, 255, 255)
-	addButtons[i].title:SetFontHeight(100)
+	addButtons[i].title:SetFontHeight(20)
 	addButtons[i].title:SetLabel("+")
 	addButtons[i]:Show()
 	addButtons[i]:EnableInput(true)
@@ -333,7 +373,7 @@ for i=0,2 do
 	minusButtons[i]:SetAnchor("TOP", addButtons[i], "BOTTOM", 0, -ScreenHeight()*1/32)
 	minusButtons[i].title = minusButtons[i]:TextLabel()
 	minusButtons[i].title:SetColor(255, 255, 255, 255)
-	minusButtons[i].title:SetFontHeight(100)
+	minusButtons[i].title:SetFontHeight(20)
 	minusButtons[i].title:SetLabel("-")
 	minusButtons[i]:Show()
 	minusButtons[i]:EnableInput(true)
@@ -355,7 +395,7 @@ for i=0,2 do
 	infoBoxes0[i]:SetAnchor("TOP", minusButtons[i], "BOTTOM", 0, -ScreenHeight()*1/256)
 	infoBoxes0[i].title = infoBoxes0[i]:TextLabel()
 	infoBoxes0[i].t = infoBoxes0[i]:Texture(255, 255, 255, 255)
-	infoBoxes0[i].title:SetFontHeight(15)
+	infoBoxes0[i].title:SetFontHeight(20)
 	infoBoxes0[i]:Show()
 end
 infoBoxes0[0].title:SetColor(255, 0, 0, 255)
@@ -373,8 +413,8 @@ for i=0,2 do
 	infoBoxes[i]:SetLayer("LOW")
 	infoBoxes[i]:SetAnchor("TOP", minusButtons[i], "BOTTOM", 0, -ScreenHeight()*1/16)
 	infoBoxes[i].title = infoBoxes[i]:TextLabel()
+	infoBoxes[i].title:SetFontHeight(20)
 	infoBoxes[i].t = infoBoxes[i]:Texture(255, 255, 255, 255)
-	infoBoxes[i].title:SetFontHeight(90)
 	infoBoxes[i].title:SetLabel("255")
 	infoBoxes[i]:Show()
 end
