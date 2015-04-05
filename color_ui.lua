@@ -2,7 +2,26 @@ redOffset = 0
 greenOffset = 0
 blueOffset = 0
 mode = 0
-SetPage(1)
+
+--audio patterns
+
+ucPush1 = FlowBox("object","PushA1", _G["FBPush"])
+ucPush2 = FlowBox("object","PushA2", _G["FBPush"])
+dac = _G["FBDac"]
+
+--if not ucSample then
+	ucSample = FlowBox("object","Sample", _G["FBSample"])
+	ucSample:AddFile("piano3.wav")
+	ucSample:AddFile("violin3.wav")
+	ucSample:AddFile("drum3.wav")
+--end
+
+dac:SetPullLink(0, ucSample, 0)
+
+ucPush1:SetPushLink(0,ucSample, 3)
+--ucPush1:Push(0)
+ucPush2:SetPushLink(0,ucSample, 2)
+ucPush2:Push(1.0)
 
 -- color methods
 
@@ -26,8 +45,21 @@ function isYellow(r, g, b)
 	return (r + g) / 2 > YELLOW_MIN_RG and b < YELLOW_MAX_B and math.abs(r - g) < 50
 end
 
+function playAudio(color)
+	ucPush2:Push(1.0)
+	ucPush2:Push(0.0)
+	DPrint("ChangeAudio")
+	if color == YELLOW then
+		ucPush1:Push(0/2)
+	elseif color == GREEN then
+		ucPush1:Push(1/2)
+	elseif color == RED then
+		ucPush1:Push(2/2)
+	end
+end
+
  function colorUpdate(r, g, b)
- 	DPrint("")
+	lastColor = currentColor
  	if isYellow(r,g,b) then
  		DPrint("Yellow")
  		currentColor = YELLOW
@@ -38,7 +70,9 @@ end
  		DPrint("Red")
  		currentColor = RED
  	end
-
+	if lastColor ~= currentColor then
+			playAudio(currentColor)
+	end
  	-- TODO: Longhan - call function to play sound based on color here
  end
 
@@ -179,55 +213,11 @@ end
 function changePage2(self, x, y, dx, dy)
 	if dx < -10 then
 		SetPage(2)
-		FreeAllRegions()
-		--if not r2 then
-			r2 = Region()
-			r2:SetWidth(ScreenWidth())
-			r2:SetHeight(ScreenHeight())
-			r2.t = r2:Texture(0, 0, 0, 255)
-			r2:SetLayer("BACKGROUND")
-			r2:Handle("OnMove", changePage1)
-			r2:EnableInput(true)
-			r2:Show()
-			buttons = {}
-			--for i= 0, 11 do
-			for i=0, 5 do
-				buttons[i] = Region()
-				buttons[i]:SetWidth(ScreenWidth()/3)
-				buttons[i]:SetHeight(ScreenHeight()/12)
-				--if i <= 5 then
-				--	buttons[i]:SetAnchor("TOPLEFT", r2, "TOPLEFT", 0, -ScreenHeight()/24-ScreenHeight()*i/6)
-				--else
-				--	buttons[i]:SetAnchor("TOPRIGHT", r2, "TOPRIGHT", 0, -ScreenHeight()/24-ScreenHeight()*(i-6)/6)
-				--end
-				if i<=2 then
-					buttons[i]:SetAnchor("TOPLEFT", r2, "TOPLEFT", 0, -ScreenHeight()/24-ScreenHeight()*i/3)
-				else
-					buttons[i]:SetAnchor("TOPRIGHT", r2, "TOPRIGHT", 0, -ScreenHeight()/24-ScreenHeight()*(i-3)/3)
-				end
-				buttons[i].t = buttons[i]:Texture(255, 255, 255, 255)
-				buttons[i].title = buttons[i]:TextLabel()
-				--buttons[i].title:SetLabel("Setting" .. i)
-				buttons[i].title:SetColor(0, 0, 0, 255)
-				buttons[i].title:SetFontHeight(35)
-				buttons[i]:Handle("OnTouchDown", Page2Info)
-				buttons[i]:Handle("OnDoubleTap", Page2Clear)
-				buttons[i]:EnableInput(true)
-				buttons[i]:Show()
-			end
-			buttons[0].title:SetLabel("Piano")
-			buttons[1].title:SetLabel("Violin")
-			buttons[2].title:SetLabel("Drum")
-			buttons[3].title:SetLabel("Flute")
-			buttons[4].title:SetLabel("Guitar")
-			buttons[5].title:SetLabel("Saxphone")
-		--end
 	end
 end
 
-
+SetPage(1)
 FreeAllRegions()
-FreeAllFlowboxes()
 r = Region()
 r:SetWidth(ScreenWidth())
 r:SetHeight(ScreenHeight())
@@ -416,3 +406,42 @@ end
 infoBoxes[0].title:SetColor(255, 0, 0, 255)
 infoBoxes[1].title:SetColor(0, 255, 0, 255)
 infoBoxes[2].title:SetColor(0, 0, 255, 255)
+
+--
+
+SetPage(2)
+r2 = Region()
+r2:SetWidth(ScreenWidth())
+r2:SetHeight(ScreenHeight())
+r2.t = r2:Texture(0, 0, 0, 255)
+r2:SetLayer("BACKGROUND")
+r2:Handle("OnMove", changePage1)
+r2:EnableInput(true)
+r2:Show()
+buttons = {}
+for i=0, 5 do
+	buttons[i] = Region()
+	buttons[i]:SetWidth(ScreenWidth()/3)
+	buttons[i]:SetHeight(ScreenHeight()/12)
+	if i<=2 then
+		buttons[i]:SetAnchor("TOPLEFT", r2, "TOPLEFT", 0, -ScreenHeight()/24-ScreenHeight()*i/3)
+	else
+		buttons[i]:SetAnchor("TOPRIGHT", r2, "TOPRIGHT", 0, -ScreenHeight()/24-ScreenHeight()*(i-3)/3)
+	end
+	buttons[i].t = buttons[i]:Texture(255, 255, 255, 255)
+	buttons[i].title = buttons[i]:TextLabel()
+	buttons[i].title:SetColor(0, 0, 0, 255)
+	buttons[i].title:SetFontHeight(35)
+	buttons[i]:Handle("OnTouchDown", Page2Info)
+	buttons[i]:Handle("OnDoubleTap", Page2Clear)
+	buttons[i]:EnableInput(true)
+	buttons[i]:Show()
+end
+buttons[0].title:SetLabel("Piano")
+buttons[1].title:SetLabel("Violin")
+buttons[2].title:SetLabel("Drum")
+buttons[3].title:SetLabel("Flute")
+buttons[4].title:SetLabel("Guitar")
+buttons[5].title:SetLabel("Saxphone")
+		
+SetPage(1)
